@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sales Invoice Entry Form</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Sales Invoice Entry</h2>
+        
+        <!-- Invoice Header Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Invoice Header
+            </div>
+            <div class="card-body">
+                <form id="invoiceHeaderForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="invoiceNo" class="form-label">Invoice Bill No</label>
+                            <input type="text" class="form-control" id="invoiceNo" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="customerName" class="form-label">Customer Name</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="invoiceDate" class="form-label">Invoice Date</label>
+                            <input type="date" class="form-control" id="invoiceDate" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="customerPhone" class="form-label">Customer Phone</label>
+                            <input type="tel" class="form-control" id="customerPhone" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Entry Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Product Entry
+            </div>
+            <div class="card-body">
+                <form id="productEntryForm">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="entryProductName" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="entryProductName" required>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" min="1" required>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="price" min="0" step="0.01" required>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="total" class="form-label">Total</label>
+                            <input type="number" class="form-control" id="total" readonly>
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="button" id="addProductBtn" class="btn btn-primary w-100">Add Product</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Table -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Product List
+            </div>
+            <div class="card-body">
+                <table class="table table-striped" id="productTable">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                        <!-- Products will be dynamically added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Grand Total</strong></td>
+                            <td id="grandTotal">0.00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <!-- <div class="text-end">
+            <button id="submitInvoiceBtn" class="btn btn-success">Generate Invoice</button>
+        </div> -->
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        // Calculate Total when Price or Quantity changes
+        $('#quantity, #price').on('input', function() {
+            calculateTotal();
+        });
+
+        // Calculate Total
+        function calculateTotal() {
+            var quantity = $('#quantity').val() || 0;
+            var price = $('#price').val() || 0;
+            var total = (quantity * price).toFixed(2);
+            $('#total').val(total);
+        }
+
+        // Add Product to Table
+        $('#addProductBtn').click(function() {
+            // Validate Product Entry Form
+            var productName = $('#entryProductName').val();
+            var quantity = $('#quantity').val();
+            var price = $('#price').val();
+            var total = $('#total').val();
+
+            // Basic validation
+            if (!productName || !quantity || !price || quantity <= 0 || price < 0) {
+                alert('Please enter valid product details');
+                return;
+            }
+
+            // Create table row
+            var newRow = `
+                <tr>
+                    <td>${productName}</td>
+                    <td>${quantity}</td>
+                    <td>${price}</td>
+                    <td>${total}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm remove-product">Remove</button>
+                    </td>
+                </tr>
+            `;
+
+            // Append row to table
+            $('#productTableBody').append(newRow);
+
+            // Update Grand Total
+            updateGrandTotal();
+
+            // Clear input fields
+            $('#entryProductName').val('');
+            $('#quantity').val('');
+            $('#price').val('');
+            $('#total').val('');
+        });
+
+        // Remove Product from Table
+        $(document).on('click', '.remove-product', function() {
+            $(this).closest('tr').remove();
+            updateGrandTotal();
+        });
+
+        // Update Grand Total
+        function updateGrandTotal() {
+            var grandTotal = 0;
+            $('#productTableBody tr').each(function() {
+                grandTotal += parseFloat($(this).find('td:nth-child(4)').text()) || 0;
+            });
+            $('#grandTotal').text(grandTotal.toFixed(2));
+        }
+
+        // Submit Invoice Details
+        // $('#submitInvoiceBtn').click(function() {
+           
+        //     var headerDetails = {
+        //         invoiceNo: $('#invoiceNo').val(),
+        //         customerName: $('#customerName').val(),
+        //         invoiceDate: $('#invoiceDate').val(),
+        //         customerPhone: $('#customerPhone').val()
+        //     };
+
+            // Collect product details
+            var productDetails = [];
+            $('#productTableBody tr').each(function() {
+                productDetails.push({
+                    productName: $(this).find('td:first-child').text(),
+                    quantity: $(this).find('td:nth-child(2)').text(),
+                    price: $(this).find('td:nth-child(3)').text(),
+                    total: $(this).find('td:nth-child(4)').text()
+                });
+            });
+
+            // Grand Total
+            var grandTotal = $('#grandTotal').text();
+
+            // Here you would typically send data to backend
+            console.log('Invoice Header Details:', headerDetails);
+            console.log('Product Details:', productDetails);
+            console.log('Grand Total:', grandTotal);
+
+            // Optional: You could add an AJAX call here to submit to a backend
+            // $.ajax({
+            //     url: 'your-backend-endpoint',
+            //     method: 'POST',
+            //     data: {
+            //         header: headerDetails,
+            //         products: productDetails,
+            //         grandTotal: grandTotal
+            //     },
+            //     success: function(response) {
+            //         alert('Invoice Generated Successfully');
+            //     }
+            // });
+        });
+    // });
+    </script>
+</body>
+</html>

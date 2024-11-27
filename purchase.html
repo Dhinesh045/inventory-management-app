@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Purchase Entry Form</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Purchase Details Entry</h2>
+        
+        <!-- Purchase Header Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Purchase Header
+            </div>
+            <div class="card-body">
+                <form id="purchaseHeaderForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="productName" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="productName" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="billNo" class="form-label">Bill No</label>
+                            <input type="text" class="form-control" id="billNo" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="billDate" class="form-label">Bill Date</label>
+                            <input type="date" class="form-control" id="billDate" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="supplierName" class="form-label">Supplier Name</label>
+                            <input type="text" class="form-control" id="supplierName" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Entry Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Product Entry
+            </div>
+            <div class="card-body">
+                <form id="productEntryForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="entryProductName" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="entryProductName" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" min="1" required>
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="button" id="addProductBtn" class="btn btn-primary w-100">Add Product</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Table -->
+        <div class="card">
+            <div class="card-header">
+                Product List
+            </div>
+            <div class="card-body">
+                <table class="table table-striped" id="productTable">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                        <!-- Products will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        // Add Product to Table
+        $('#addProductBtn').click(function() {
+            // Validate Product Entry Form
+            var productName = $('#entryProductName').val();
+            var quantity = $('#quantity').val();
+
+            // Basic validation
+            if (!productName || !quantity || quantity <= 0) {
+                alert('Please enter valid product name and quantity');
+                return;
+            }
+
+            // Create table row
+            var newRow = `
+                <tr>
+                    <td>${productName}</td>
+                    <td>${quantity}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm remove-product">Remove</button>
+                    </td>
+                </tr>
+            `;
+
+            // Append row to table
+            $('#productTableBody').append(newRow);
+
+            // Clear input fields
+            $('#entryProductName').val('');
+            $('#quantity').val('');
+        });
+
+        // Remove Product from Table
+        $(document).on('click', '.remove-product', function() {
+            $(this).closest('tr').remove();
+        });
+
+        // Optional: Submit Full Purchase Details (you would typically send this to a backend)
+        $('#submitPurchaseBtn').click(function() {
+            // Collect header details
+            var headerDetails = {
+                productName: $('#productName').val(),
+                billNo: $('#billNo').val(),
+                billDate: $('#billDate').val(),
+                supplierName: $('#supplierName').val()
+            };
+
+            // Collect product details
+            var productDetails = [];
+            $('#productTableBody tr').each(function() {
+                productDetails.push({
+                    productName: $(this).find('td:first-child').text(),
+                    quantity: $(this).find('td:nth-child(2)').text()
+                });
+            });
+
+            // Here you would typically send data to backend
+            console.log('Header Details:', headerDetails);
+            console.log('Product Details:', productDetails);
+        });
+    });
+    </script>
+</body>
+</html>

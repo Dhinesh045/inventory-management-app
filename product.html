@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .error {
+            color: red;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Product Management</h3>
+            </div>
+            <div class="card-body">
+                <form id="productForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <select class="form-select" id="categoryName" name="categoryName">
+                                <option value="">Select Category</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Furniture">Furniture</option>
+                                <option value="Mobiles">Mobiles</option>
+                                <option value="Laptops">Laptops</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="productName" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="productName" name="productName">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="productCode" class="form-label">Product Code</label>
+                            <input type="text" class="form-control" id="productCode" name="productCode">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="stockLevel" class="form-label">Stock Level</label>
+                            <input type="number" class="form-control" id="stockLevel" name="stockLevel" min="0">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Add Product</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="table-responsive mt-4">
+                    <table class="table table-striped" id="productTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Sr. No.</th>
+                                <th>Category Name</th>
+                                <th>Product Name</th>
+                                <th>Product Code</th>
+                                <th>Stock Level</th>
+                                <th>Stock Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        // Initialize form validation
+        $("#productForm").validate({
+            // Validation Rules
+            rules: {
+                categoryName: {
+                    required: true
+                },
+                productName: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 50
+                },
+                productCode: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 10
+                },
+                stockLevel: {
+                    required: true,
+                    number: true,
+                    min: 0
+                }
+            },
+            // Custom Error Messages
+            messages: {
+                categoryName: {
+                    required: "Please select a category"
+                },
+                productName: {
+                    required: "Please enter product name",
+                    minlength: "Product name must be at least 2 characters",
+                    maxlength: "Product name cannot exceed 50 characters"
+                },
+                productCode: {
+                    required: "Please enter product code",
+                    minlength: "Product code must be at least 2 characters",
+                    maxlength: "Product code cannot exceed 10 characters"
+                },
+                stockLevel: {
+                    required: "Please enter stock level",
+                    number: "Stock level must be a number",
+                    min: "Stock level cannot be negative"
+                }
+            },
+            // Handle form submission
+            submitHandler: function(form) {
+                // Prevent default form submission
+                event.preventDefault();
+
+                // Get form values
+                const categoryName = $('#categoryName').val();
+                const productName = $('#productName').val();
+                const productCode = $('#productCode').val();
+                const stockLevel = $('#stockLevel').val();
+
+                // Determine Stock Status
+                let stockStatus = '';
+                let stockStatusClass = '';
+                if (stockLevel == 0) {
+                    stockStatus = 'Out of Stock';
+                    stockStatusClass = 'bg-danger';
+                } else if (stockLevel < 10) {
+                    stockStatus = 'Low Stock';
+                    stockStatusClass = 'bg-warning';
+                } else {
+                    stockStatus = 'In Stock';
+                    stockStatusClass = 'bg-success';
+                }
+
+                // Get Current Row Count
+                const rowCount = $('#productTableBody tr').length + 1;
+
+                // Create Table Row
+                const newRow = `
+                    <tr>
+                        <td>${rowCount}</td>
+                        <td>${categoryName}</td>
+                        <td>${productName}</td>
+                        <td>${productCode}</td>
+                        <td>${stockLevel}</td>
+                        <td>
+                            <span class="badge ${stockStatusClass}">
+                                ${stockStatus}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+
+                // Append Row to Table
+                $('#productTableBody').append(newRow);
+
+                // Reset form
+                $('#productForm')[0].reset();
+
+                // Return false to prevent form submission
+                return false;
+            },
+            
+            // Error placement
+            errorPlacement: function(error, element) {
+                error.addClass('error');
+                error.insertAfter(element);
+            }
+        });
+    });
+    </script>
+</body>
+</html>

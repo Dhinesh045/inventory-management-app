@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stock Report</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .nav-tabs .nav-link.active {
+            background-color: #f8f9fa;
+            border-color: #dee2e6 #dee2e6 #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Inventory Management</a>
+           
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h2>Stock Report</h2>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#stockTableView">Table View</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#stockGraphView">Graph View</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="stockTableView">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Current Stock</th>
+                                    <th>Minimum Stock</th>
+                                    <th>Maximum Stock</th>
+                                    <th>Stock Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stockTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="stockGraphView">
+                <div class="card">
+                    <div class="card-body">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        // Sample stock data
+        const stockData = [
+            { productName: 'Laptop', currentStock: 45, minStock: 10, maxStock: 50, price: 45000 },
+            { productName: 'Monitor', currentStock: 32, minStock: 15, maxStock: 60, price: 8000 },
+            { productName: 'Keyboard', currentStock: 78, minStock: 20, maxStock: 100, price: 1500 },
+            { productName: 'Mouse', currentStock: 90, minStock: 25, maxStock: 120, price: 800 },
+            { productName: 'Printer', currentStock: 12, minStock: 8, maxStock: 30, price: 15000 },
+            { productName: 'SSD', currentStock: 55, minStock: 15, maxStock: 80, price: 6000 },
+            { productName: 'RAM', currentStock: 67, minStock: 20, maxStock: 100, price: 3500 }
+        ];
+
+        function getStockStatus(current, min, max) {
+            if (current <= min) return 'Low Stock';
+            if (current >= max) return 'Overstocked';
+            return 'Normal';
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Low Stock': return 'bg-danger';
+                case 'Overstocked': return 'bg-warning';
+                default: return 'bg-success';
+            }
+        }
+
+        // Render Stock Table
+        function renderStockTable() {
+            const tableBody = $('#stockTableBody');
+            tableBody.empty();
+
+            stockData.forEach(item => {
+                const stockValue = item.currentStock * item.price;
+                const status = getStockStatus(item.currentStock, item.minStock, item.maxStock);
+                const statusClass = getStatusClass(status);
+                
+                const row = `
+                    <tr>
+                        <td>${item.productName}</td>
+                        <td>${item.currentStock}</td>
+                        <td>${item.minStock}</td>
+                        <td>${item.maxStock}</td>
+                        <td>₹${stockValue.toLocaleString()}</td>
+                        <td><span class="badge ${statusClass}">${status}</span></td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
+        }
+
+        // Render Stock Graph
+        function renderStockGraph() {
+            if (window.stockChart instanceof Chart) {
+                window.stockChart.destroy();
+            }
+
+            const ctx = document.getElementById('stockChart');
+            const productNames = stockData.map(item => item.productName);
+            const currentStocks = stockData.map(item => item.currentStock);
+            const minStocks = stockData.map(item => item.minStock);
+            const maxStocks = stockData.map(item => item.maxStock);
+
+            window.stockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: productNames,
+                    datasets: [
+                        {
+                            label: 'Current Stock',
+                            data: currentStocks,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Minimum Stock',
+                            data: minStocks,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderDash: [5, 5],
+                            fill: false
+                        },
+                        {
+                            label: 'Maximum Stock',
+                            data: maxStocks,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderDash: [5, 5],
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Stock Levels by Product'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Stock Quantity'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Tab change events
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            const target = $(e.target).attr("href");
+            if (target === "#stockGraphView") {
+                renderStockGraph();
+            }
+        });
+
+        // Initial render
+        renderStockTable();
+    });
+    </script>
+</body>
+</html>

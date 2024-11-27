@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Category Management</h3>
+            </div>
+            <div class="card-body">
+                <form id="categoryForm" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" name="categoryName" required>
+                            <div class="error-message" id="categoryNameError"></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="categoryCode" class="form-label">Category Code</label>
+                            <input type="text" class="form-control" id="categoryCode" name="categoryCode" required>
+                            <div class="error-message" id="categoryCodeError"></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="categoryDescription" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="categoryDescription" name="categoryDescription">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="categoryStatus" class="form-label">Status</label>
+                            <select class="form-select" id="categoryStatus" name="categoryStatus" required>
+                                <option value="">Select Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                            <div class="error-message" id="categoryStatusError"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Add Category</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="categoryTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Sr. No.</th>
+                                <th>Category Name</th>
+                                <th>Category Code</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+    $(document).ready(function() {
+        let categoryCounter = 0;
+
+        // Form Validation Function
+        function validateForm() {
+            let isValid = true;
+            
+            // Clear previous error messages
+            $('.error-message').text('');
+
+            // Validate Category Name
+            const categoryName = $('#categoryName').val().trim();
+            if (categoryName === '') {
+                $('#categoryNameError').text('Category Name is required');
+                isValid = false;
+            }
+
+            // Validate Category Code
+            const categoryCode = $('#categoryCode').val().trim();
+            if (categoryCode === '') {
+                $('#categoryCodeError').text('Category Code is required');
+                isValid = false;
+            }
+
+            // Validate Status
+            const categoryStatus = $('#categoryStatus').val();
+            if (categoryStatus === '') {
+                $('#categoryStatusError').text('Status is required');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Add Category Form Submit
+        $('#categoryForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Validate Form
+            if (!validateForm()) {
+                return;
+            }
+
+            // Get Form Values
+            const categoryName = $('#categoryName').val().trim();
+            const categoryCode = $('#categoryCode').val().trim();
+            const categoryDescription = $('#categoryDescription').val().trim();
+            const categoryStatus = $('#categoryStatus').val();
+
+            // Increment Counter
+            categoryCounter++;
+
+            // Create Table Row
+            const newRow = `
+                <tr>
+                    <td>${categoryCounter}</td>
+                    <td>${categoryName}</td>
+                    <td>${categoryCode}</td>
+                    <td>${categoryDescription || 'N/A'}</td>
+                    <td>
+                        <span class="badge ${categoryStatus === 'Active' ? 'bg-success' : 'bg-danger'}">
+                            ${categoryStatus}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info edit-btn">Edit</button>
+                        <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                    </td>
+                </tr>
+            `;
+
+            // Append Row to Table
+            $('#categoryTableBody').append(newRow);
+
+            // Reset Form
+            $('#categoryForm')[0].reset();
+        });
+
+        // Delete Row Functionality
+        $('#categoryTableBody').on('click', '.delete-btn', function() {
+            $(this).closest('tr').remove();
+            // Optionally, decrement the counter
+            categoryCounter--;
+        });
+
+        // Edit Row Functionality (basic implementation)
+        $('#categoryTableBody').on('click', '.edit-btn', function() {
+            const row = $(this).closest('tr');
+            
+            // Populate form with row data
+            $('#categoryName').val(row.find('td:nth-child(2)').text());
+            $('#categoryCode').val(row.find('td:nth-child(3)').text());
+            $('#categoryDescription').val(row.find('td:nth-child(4)').text() === 'N/A' ? '' : row.find('td:nth-child(4)').text());
+            $('#categoryStatus').val(row.find('td:nth-child(5) span').text());
+
+            // Remove the row (user will re-add with updated information)
+            row.remove();
+            categoryCounter--;
+        });
+    });
+    </script>
+</body>
+</html>
